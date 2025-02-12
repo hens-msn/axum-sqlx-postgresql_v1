@@ -4,7 +4,6 @@ use sqlx::{
     Error as SqlxError, 
     postgres::PgRow, 
     Row,
-    types::Uuid as SqlxUuid
 };
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
@@ -47,16 +46,14 @@ impl ProductRepositoryImpl {
 impl ProductRepository for ProductRepositoryImpl {
     async fn create(&self, name: &str, price: f64, stock: i32) -> Result<Product, SqlxError> {
         let now = Utc::now();
-        let sqlx_uuid = SqlxUuid::from_bytes(Uuid::now_v7().into_bytes());
-
+        
         sqlx::query(
             r#"
-            INSERT INTO products (id, name, price, stock, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO products (name, price, stock, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *
             "#,
         )
-        .bind(sqlx_uuid)
         .bind(name)
         .bind(price)
         .bind(stock)

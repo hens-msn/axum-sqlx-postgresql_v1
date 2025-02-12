@@ -1,13 +1,11 @@
 use sqlx::{PgPool, Error};
 use serde::Deserialize;
-use uuid::Uuid;
 use include_dir::{include_dir, Dir};
 
 static DATA_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/data");
 
 #[derive(Debug, Deserialize)]
 struct SeedProduct {
-    id: String,
     name: String,
     price: f64,
     stock: i32,
@@ -28,15 +26,11 @@ pub async fn seed_products(pool: &PgPool) -> Result<(), Error> {
 
     // Insert data baru
     for product in products {
-        let uuid = Uuid::parse_str(&product.id)
-            .map_err(|e| Error::Configuration(format!("ID invalid: {}", e).into()))?;
-        
         sqlx::query!(
             r#"
-            INSERT INTO products (id, name, price, stock)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO products (name, price, stock)
+            VALUES ($1, $2, $3)
             "#,
-            uuid,
             product.name,
             product.price,
             product.stock
